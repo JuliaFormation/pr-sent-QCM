@@ -459,7 +459,7 @@ btnRestart?.addEventListener("click", () => {
   screenImport.hidden  = false;
 
   const titleEl = document.getElementById("import-title");
-  if (titleEl) titleEl.textContent = "Prêt à jouer ?";
+  if (titleEl) titleEl.textContent = "Bienvenue";
   btnStart.disabled = false;
 
   if (isReaderMode) {
@@ -543,7 +543,7 @@ window.addEventListener("DOMContentLoaded", () => {
     if (quizData.length > 0) {
       isReaderMode = true;
       screenImport.hidden = false;
-      document.getElementById("import-title").textContent = "Prêt à jouer ?";
+      document.getElementById("import-title").textContent = "Bienvenue";
       importSummary.textContent = `${quizData.length} question(s) • ${quizTitle}`;
       document.querySelector(".uploader")?.setAttribute("hidden","true");
       document.querySelector(".final-message-card")?.setAttribute("hidden","true");
