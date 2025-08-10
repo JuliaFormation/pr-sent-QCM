@@ -109,9 +109,10 @@
       </header>
       <div id="answers" class="answers"></div>
       <footer class="nav">
-        <button id="btnPrev" class="btn nav-prev" type="button">Précédent</button>
-        <button id="btnValidate" class="btn success nav-validate" type="button">Valider</button>
-      </footer>
+  <!-- Valider en premier dans le DOM => TAB arrive ici d'abord -->
+  <button id="btnValidate" class="btn success nav-validate" type="button">Valider</button>
+  <button id="btnPrev" class="btn nav-prev" type="button">Précédent</button>
+</footer>
     </section>
 
     <!-- Écran résultats -->
@@ -159,7 +160,7 @@
   </main>
 
   <footer class="app-footer">
-    <small>Générateur de quiz HTML/JS – Import CSV local</small>
+    <small>Développé par Julia Raison formations</small>
   </footer>
 
   <script src="script.js?v=2"></script>
