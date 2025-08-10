@@ -265,3 +265,34 @@ body{
   }
   .nav-validate,.nav-prev{ justify-self:stretch; }
 }
+/* ===== Header: bouton thème compact (surtout mobile) ===== */
+#themeToggle{
+  width: 44px; height: 44px; padding: 0;
+  display: grid; place-items: center;
+  border-radius: 999px;
+  background: var(--surface-2);
+}
+#themeIcon{ font-size: 18px; line-height: 1; }
+
+@media (max-width: 640px){
+  #themeToggle{ width: 38px; height: 38px; box-shadow: none; }
+}
+
+/* ===== Landing lecteur : titre du quiz lisible en sombre ===== */
+:root[data-theme="dark"] .reader-hero .hero-card{
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--surface) 92%, black 8%),
+    color-mix(in oklab, var(--surface) 78%, var(--primary-2) 22%)
+  );
+  border-color: rgba(255,255,255,.08);
+}
+:root[data-theme="dark"] .reader-hero .hero-quiz-title{
+  color: var(--text);
+}
+
+/* (déjà présent, mais je le rappelle) : landing vendeuse */
+.reader-hero .hero-title{
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 800;
+}
