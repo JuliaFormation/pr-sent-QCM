@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Générateur de quiz</title>
+  <link rel="stylesheet" href="style.css?v=2" />
+</head>
+<body>
+  <header id="app-header" class="app-header" aria-live="polite">
+    <div class="header-left">
+      <h1 id="quizTitle">Mon quiz</h1>
+    </div>
+    <button id="themeToggle" class="btn ghost" type="button" aria-label="Basculer thème">
+      <span id="themeIcon" aria-hidden="true">☀️</span>
+    </button>
+  </header>
+
+  <main id="app" class="app">
+
+    <!-- Écran import / accueil -->
+    <section id="screen-import" class="screen" aria-labelledby="import-title">
+      <h2 id="import-title">Charger votre quiz (CSV)</h2>
+
+      <!-- Bannière (masquée en mode lecteur) -->
+      <div id="readerBanner" class="reader-banner" hidden>
+        Mode lecteur — ce quiz a été chargé depuis un lien partagé.
+      </div>
+
+      <div class="uploader">
+        <label for="csvFile">Fichier CSV</label>
+        <input id="csvFile" type="file" accept=".csv" />
+        <p class="hint">Format : UTF‑8, virgules. A=type (QCM/RC), B=n°, C=question, D‑G=options, H=bonne réponse, I=explication.</p>
+      </div>
+
+      <!-- Config message final -->
+      <div class="final-message-card">
+        <h3>Message final (selon le score)</h3>
+        <p class="hint">Variables : <code>{score}</code>, <code>{percent}</code>.</p>
+
+        <!-- Palier 1 -->
+        <div class="final-row">
+          <label class="final-label">Palier 1 — Excellent (≥ %)</label>
+          <input id="cfgExcellentMin" type="number" min="0" max="100" value="80" class="final-num" />
+          <textarea id="cfgExcellentText" rows="2">Bravo, excellent score !</textarea>
+          <div class="final-inline">
+            <input id="cfgExcellentLinkText" type="text" placeholder="Texte du lien (facultatif)" />
+            <input id="cfgExcellentLinkHref" type="url" placeholder="https://lien.example (facultatif)" />
+          </div>
+          <input id="cfgExcellentImg" type="url" placeholder="URL image/GIF (facultatif)" />
+          <div class="img-preview" id="cfgExcellentImgPreviewWrap" hidden>
+            <img id="cfgExcellentImgPreview" alt="Prévisualisation (excellent)" />
+            <small class="img-preview-hint">Prévisualisation</small>
+          </div>
+        </div>
+
+        <!-- Palier 2 -->
+        <div class="final-row">
+          <label class="final-label">Palier 2 — Bien (de % à %)</label>
+          <input id="cfgGoodMin" type="number" min="0" max="100" value="50" class="final-num" />
+          <input id="cfgGoodMax" type="number" min="0" max="100" value="79" class="final-num" />
+          <textarea id="cfgGoodText" rows="2">Beau résultat, encore un effort pour atteindre l’excellence !</textarea>
+          <div class="final-inline">
+            <input id="cfgGoodLinkText" type="text" placeholder="Texte du lien (facultatif)" />
+            <input id="cfgGoodLinkHref" type="url" placeholder="https://lien.example (facultatif)" />
+          </div>
+          <input id="cfgGoodImg" type="url" placeholder="URL image/GIF (facultatif)" />
+          <div class="img-preview" id="cfgGoodImgPreviewWrap" hidden>
+            <img id="cfgGoodImgPreview" alt="Prévisualisation (bien)" />
+            <small class="img-preview-hint">Prévisualisation</small>
+          </div>
+        </div>
+
+        <!-- Palier 3 -->
+        <div class="final-row">
+          <label class="final-label">Palier 3 — À revoir (&lt; %)</label>
+          <input id="cfgReviewMax" type="number" min="0" max="100" value="49" class="final-num" />
+          <textarea id="cfgReviewText" rows="2">Pas grave, ça se travaille. Revois le cours et retente !</textarea>
+          <div class="final-inline">
+            <input id="cfgReviewLinkText" type="text" placeholder="Texte du lien (facultatif)" />
+            <input id="cfgReviewLinkHref" type="url" placeholder="https://lien.example (facultatif)" />
+          </div>
+          <input id="cfgReviewImg" type="url" placeholder="URL image/GIF (facultatif)" />
+          <div class="img-preview" id="cfgReviewImgPreviewWrap" hidden>
+            <img id="cfgReviewImgPreview" alt="Prévisualisation (à revoir)" />
+            <small class="img-preview-hint">Prévisualisation</small>
+          </div>
+        </div>
+
+        <div class="final-actions">
+          <button id="cfgSave" class="btn">Enregistrer</button>
+          <button id="cfgReset" class="btn ghost">Réinitialiser</button>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="import-actions">
+        <button id="btnStart" class="btn primary" disabled>Tester le quiz</button>
+        <button id="btnShare" class="btn" disabled>Partager le quiz</button>
+      </div>
+      <div id="importSummary" class="import-summary" aria-live="polite"></div>
+    </section>
+
+    <!-- Écran question -->
+    <section id="screen-question" class="screen" hidden aria-labelledby="question-title">
+      <header class="question-header">
+        <div id="progress" class="progress"></div>
+        <h2 id="question-title">Question</h2>
+      </header>
+      <div id="answers" class="answers"></div>
+      <footer class="nav">
+        <button id="btnPrev" class="btn nav-prev" type="button">Précédent</button>
+        <button id="btnValidate" class="btn success nav-validate" type="button">Valider</button>
+      </footer>
+    </section>
+
+    <!-- Écran résultats -->
+    <section id="screen-results" class="screen" hidden aria-labelledby="results-title">
+      <h2 id="results-title">Résultats</h2>
+      <div class="results-top">
+        <div class="score-wrap">
+          <div id="finalScore" class="score"></div>
+        </div>
+        <aside id="finalMessageCard" class="final-card" aria-live="polite"></aside>
+      </div>
+      <div id="resultsList" class="results-list"></div>
+      <div class="results-actions">
+        <button id="btnRestart" class="btn">Recommencer</button>
+      </div>
+    </section>
+
+    <!-- Modal partage -->
+    <div id="shareModal" class="modal" hidden>
+      <div class="modal-card">
+        <header class="modal-head">
+          <h3>Partager le quiz</h3>
+          <button id="shareClose" class="btn ghost" type="button" aria-label="Fermer">✕</button>
+        </header>
+        <div class="modal-body">
+          <p class="hint">Ce lien contient le quiz + votre message final. Ouvrable sur ordinateur ou téléphone.</p>
+
+          <label class="final-label">Lien direct</label>
+          <div class="copy-row">
+            <input id="shareLink" type="url" readonly />
+            <button id="copyLink" class="btn">Copier</button>
+          </div>
+
+          <label class="final-label">Intégration iFrame</label>
+          <div class="copy-row">
+            <textarea id="shareIframe" rows="3" readonly></textarea>
+            <button id="copyIframe" class="btn">Copier</button>
+          </div>
+
+          <p class="hint small">Si le lien est long, utilisez l’export “page autonome”.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="app-footer">
+    <small>Générateur de quiz HTML/JS – Import CSV local</small>
+  </footer>
+
+  <script src="script.js?v=2"></script>
+</body>
+</html>
