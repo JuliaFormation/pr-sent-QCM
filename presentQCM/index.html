@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QCM fichier test CSV</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="robots" content="noindex, nofollow">
+</head>
+<body>
+  <main id="app" class="app">
+
+    <!-- Écran import / accueil -->
+    <section id="screen-import" class="screen" aria-labelledby="import-title">
+      <h2 id="import-title">Charger votre quiz (CSV)</h2>
+
+      <!-- Bannière (masquée en mode lecteur) -->
+      <div id="readerBanner" class="reader-banner" hidden="">
+        Mode lecteur — ce quiz a été chargé depuis un lien partagé.
+      </div>
+
+      <div class="uploader">
+        <label for="csvFile">Fichier CSV</label>
+        <input id="csvFile" type="file" accept=".csv">
+        <p class="hint">Format : UTF‑8, virgules. A=type (QCM/RC), B=n°, C=question, D‑G=options, H=bonne réponse, I=explication.</p>
+      </div>
+
+      <!-- Config message final -->
+      <div class="final-message-card">
+        <h3>Message final (selon le score)</h3>
+        <p class="hint">Variables : <code>{score}</code>, <code>{percent}</code>.</p>
+
+        <!-- Palier 1 -->
+        <div class="final-row">
+          <label class="final-label">Palier 1 — Excellent (≥ %)</label>
+          <input id="cfgExcellentMin" type="number" min="0" max="100" value="80" class="final-num">
+          <textarea id="cfgExcellentText" rows="2">Bravo, excellent score !</textarea>
+          <div class="final-inline">
+            <input id="cfgExcellentLinkText" type="text" placeholder="Texte du lien (facultatif)">
+            <input id="cfgExcellentLinkHref" type="url" placeholder="https://lien.example (facultatif)">
+          </div>
+          <input id="cfgExcellentImg" type="url" placeholder="URL image/GIF (facultatif)">
+          <div class="img-preview" id="cfgExcellentImgPreviewWrap">
+            <img id="cfgExcellentImgPreview" alt="Prévisualisation (excellent)" src="https://www.highlandsafaris.net/blog/images/deer-header.jpg">
+            <small class="img-preview-hint">Prévisualisation</small>
+          </div>
+        </div>
+
+        <!-- Palier 2 -->
+        <div class="final-row">
+          <label class="final-label">Palier 2 — Bien (de % à %)</label>
+          <input id="cfgGoodMin" type="number" min="0" max="100" value="50" class="final-num">
+          <input id="cfgGoodMax" type="number" min="0" max="100" value="79" class="final-num">
+          <textarea id="cfgGoodText" rows="2">Beau résultat, encore un effort pour atteindre l’excellence !</textarea>
+          <div class="final-inline">
+            <input id="cfgGoodLinkText" type="text" placeholder="Texte du lien (facultatif)">
+            <input id="cfgGoodLinkHref" type="url" placeholder="https://lien.example (facultatif)">
+          </div>
+          <input id="cfgGoodImg" type="url" placeholder="URL image/GIF (facultatif)">
+          <div class="img-preview" id="cfgGoodImgPreviewWrap" hidden="">
+            <img id="cfgGoodImgPreview" alt="Prévisualisation (bien)" src="">
+            <small class="img-preview-hint">Prévisualisation</small>
+          </div>
+        </div>
+
+        <!-- Palier 3 -->
+        <div class="final-row">
+          <label class="final-label">Palier 3 — À revoir (&lt; %)</label>
+          <input id="cfgReviewMax" type="number" min="0" max="100" value="49" class="final-num">
+          <textarea id="cfgReviewText" rows="2">Pas grave, ça se travaille. Revois le cours et retente !</textarea>
+          <div class="final-inline">
+            <input id="cfgReviewLinkText" type="text" placeholder="Texte du lien (facultatif)">
+            <input id="cfgReviewLinkHref" type="url" placeholder="https://lien.example (facultatif)">
+          </div>
+          <input id="cfgReviewImg" type="url" placeholder="URL image/GIF (facultatif)">
+          <div class="img-preview" id="cfgReviewImgPreviewWrap" hidden="">
+            <img id="cfgReviewImgPreview" alt="Prévisualisation (à revoir)" src="">
+            <small class="img-preview-hint">Prévisualisation</small>
+          </div>
+        </div>
+
+        <div class="final-actions">
+          <button id="cfgSave" class="btn">Enregistrer</button>
+          <button id="cfgReset" class="btn ghost">Réinitialiser</button>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="import-actions">
+        <button id="btnStart" class="btn primary">Tester le quiz</button>
+        <button id="btnShare" class="btn">Partager le quiz</button>
+      </div>
+      <div id="importSummary" class="import-summary" aria-live="polite">10 question(s) détectée(s).</div>
+    </section>
+
+    <!-- Écran question -->
+    <section id="screen-question" class="screen" hidden="" aria-labelledby="question-title">
+      <header class="question-header">
+        <div id="progress" class="progress"></div>
+        <h2 id="question-title">Question</h2>
+      </header>
+      <div id="answers" class="answers"></div>
+
+      <!-- Valider d'abord dans le DOM → TAB vient ici en premier -->
+      <footer class="nav">
+        <button id="btnValidate" class="btn success nav-validate" type="button">Valider</button>
+        <button id="btnPrev" class="btn nav-prev" type="button">Précédent</button>
+      </footer>
+    </section>
+
+    <!-- Écran résultats -->
+    <section id="screen-results" class="screen" hidden="" aria-labelledby="results-title">
+      <h2 id="results-title">Résultats</h2>
+      <div class="results-top">
+        <div class="score-wrap">
+          <div id="finalScore" class="score"></div>
+        </div>
+        <aside id="finalMessageCard" class="final-card" aria-live="polite"></aside>
+      </div>
+      <div id="resultsList" class="results-list"></div>
+      <div class="results-actions">
+        <button id="btnRestart" class="btn">Recommencer</button>
+      </div>
+    </section>
+
+    <!-- Modal partage -->
+    <div id="shareModal" class="modal">
+      <div class="modal-card">
+        <header class="modal-head">
+          <h3>Partager le quiz</h3>
+          <button id="shareClose" class="btn ghost" type="button" aria-label="Fermer">✕</button>
+        </header>
+        <div class="modal-body">
+          <p class="hint">Ce lien contient le quiz + votre message final. Ouvrable sur ordinateur ou téléphone.</p>
+
+          <label class="final-label">Lien direct</label>
+          <div class="copy-row">
+            <input id="shareLink" type="url" readonly="">
+            <button id="copyLink" class="btn">Copier</button>
+          </div>
+
+          <label class="final-label">Intégration iFrame</label>
+          <div class="copy-row">
+            <textarea id="shareIframe" rows="3" readonly=""></textarea>
+            <button id="copyIframe" class="btn">Copier</button>
+          <button id="exportHtmlBtn" class="btn">Exporter .html (autonome)</button></div>
+
+          <p class="hint small">Si le lien est long, utilisez l’export “page autonome”.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="script.js"></script>
+
+  <!-- Payload embarqué : lu par script.js même sans hash -->
+  <script id="__QUIZ_PAYLOAD__" type="application/json">{"t":"QCM fichier test CSV","csv":"Type de question;Type de question;Texte de la question;Proposition 1;Proposition 2;Proposition 3 (facultatif);Proposition 4 (facultatif);Bonne réponse (texte EXACT hors majuscules);Explication ou rappel de la règle (facultatif);Mots-clés  séparés par des virgules (facultatif);Niveau de difficulté (facile, moyen, difficile) facultatif;Lien vers une image ou un son (facultatif)\r\nQCM;1;Elle… son camp.;choisit;choisi;choisie;;choisit;\"\"\"choisir\"\", ni l'un ni l'autre, catégorie jaune\";;facile;\r\nQCM;2;Les témoins… le registre.;signes;signent;;;signent;\"sujet \"\"les témoins\"\" : ent\";;facile;\r\nQCM;3;Je… bien le problème.;comprend;comprends;;;comprends;\"verbe \"\"comprendre\"\", catégorie verte : ds, ds, d\";;facile;\r\nQCM;4;Ce produit… beaucoup.;pollut;pollue;;;pollue;\"verbe \"\"polluer\"\", e, es, e\";;facile;\r\nQCM;5;Je te… ses coordonées.;donne;donnes;;;donne;\"sujet \"\"je\"\" \";;facile;\r\nQCM;6;Lola me… les documents nécessaires.;fournit;fournie;fournis;;fournit;fournir, jaune, s, s, t;;facile;\r\nQCM;7;\"Une mention \"\"très bien\"\"… un bel avenir.\";garantie;garantis;garantit;;garantit;garantir, jaune, s, s, t (attention à ne pas confondre avec la garantie de Darty);;facile;\r\nQCM;8;Vous nous… merci.;dîtes;dites;;;dites;\"dites (comme \"\"faites\"\", sans accent)\";;facile;\r\nQCM;9;Paul te… le dossier par e-mail.;renvois;renvoies;renvoie;renvoit;renvoie;renvoyer, -er, e, es, e;;facile;\r\nQCM;10;Je… le dernier paragraphe.;relie;relis;relit;reli;relis;relire, jaune, s, s, t;;moyen;","cfg":{"excellent":{"min":80,"text":"Bravo, excellent score !","linkText":"Regarde le cerf","linkHref":"https://www.highlandsafaris.net/blog/images/deer-header.jpg","img":"https://www.highlandsafaris.net/blog/images/deer-header.jpg"},"good":{"min":50,"max":79,"text":"Beau résultat, encore un effort pour atteindre l’excellence !","linkText":"","linkHref":"","img":""},"review":{"max":49,"text":"Pas grave, ça se travaille. Revois le cours et retente !","linkText":"","linkHref":"","img":""}},"v":1}</script>
+
+  <!-- Optionnel : garder un hash pour rétro-compatibilité -->
+  <script>(function(){var e='eyJ0IjoiUUNNIGZpY2hpZXIgdGVzdCBDU1YiLCJjc3YiOiJUeXBlIGRlIHF1ZXN0aW9uO1R5cGUgZGUgcXVlc3Rpb247VGV4dGUgZGUgbGEgcXVlc3Rpb247UHJvcG9zaXRpb24gMTtQcm9wb3NpdGlvbiAyO1Byb3Bvc2l0aW9uIDMgKGZhY3VsdGF0aWYpO1Byb3Bvc2l0aW9uIDQgKGZhY3VsdGF0aWYpO0Jvbm5lIHLDqXBvbnNlICh0ZXh0ZSBFWEFDVCBob3JzIG1hanVzY3VsZXMpO0V4cGxpY2F0aW9uIG91IHJhcHBlbCBkZSBsYSByw6hnbGUgKGZhY3VsdGF0aWYpO01vdHMtY2zDqXMgIHPDqXBhcsOpcyBwYXIgZGVzIHZpcmd1bGVzIChmYWN1bHRhdGlmKTtOaXZlYXUgZGUgZGlmZmljdWx0w6kgKGZhY2lsZSwgbW95ZW4sIGRpZmZpY2lsZSkgZmFjdWx0YXRpZjtMaWVuIHZlcnMgdW5lIGltYWdlIG91IHVuIHNvbiAoZmFjdWx0YXRpZilcclxuUUNNOzE7RWxsZeKApiBzb24gY2FtcC47Y2hvaXNpdDtjaG9pc2k7Y2hvaXNpZTs7Y2hvaXNpdDtcIlwiXCJjaG9pc2lyXCJcIiwgbmkgbCd1biBuaSBsJ2F1dHJlLCBjYXTDqWdvcmllIGphdW5lXCI7O2ZhY2lsZTtcclxuUUNNOzI7TGVzIHTDqW1vaW5z4oCmIGxlIHJlZ2lzdHJlLjtzaWduZXM7c2lnbmVudDs7O3NpZ25lbnQ7XCJzdWpldCBcIlwibGVzIHTDqW1vaW5zXCJcIiA6IGVudFwiOztmYWNpbGU7XHJcblFDTTszO0pl4oCmIGJpZW4gbGUgcHJvYmzDqG1lLjtjb21wcmVuZDtjb21wcmVuZHM7Oztjb21wcmVuZHM7XCJ2ZXJiZSBcIlwiY29tcHJlbmRyZVwiXCIsIGNhdMOpZ29yaWUgdmVydGUgOiBkcywgZHMsIGRcIjs7ZmFjaWxlO1xyXG5RQ007NDtDZSBwcm9kdWl04oCmIGJlYXVjb3VwLjtwb2xsdXQ7cG9sbHVlOzs7cG9sbHVlO1widmVyYmUgXCJcInBvbGx1ZXJcIlwiLCBlLCBlcywgZVwiOztmYWNpbGU7XHJcblFDTTs1O0plIHRl4oCmIHNlcyBjb29yZG9uw6llcy47ZG9ubmU7ZG9ubmVzOzs7ZG9ubmU7XCJzdWpldCBcIlwiamVcIlwiIFwiOztmYWNpbGU7XHJcblFDTTs2O0xvbGEgbWXigKYgbGVzIGRvY3VtZW50cyBuw6ljZXNzYWlyZXMuO2ZvdXJuaXQ7Zm91cm5pZTtmb3VybmlzOztmb3Vybml0O2ZvdXJuaXIsIGphdW5lLCBzLCBzLCB0OztmYWNpbGU7XHJcblFDTTs3O1wiVW5lIG1lbnRpb24gXCJcInRyw6hzIGJpZW5cIlwi4oCmIHVuIGJlbCBhdmVuaXIuXCI7Z2FyYW50aWU7Z2FyYW50aXM7Z2FyYW50aXQ7O2dhcmFudGl0O2dhcmFudGlyLCBqYXVuZSwgcywgcywgdCAoYXR0ZW50aW9uIMOgIG5lIHBhcyBjb25mb25kcmUgYXZlYyBsYSBnYXJhbnRpZSBkZSBEYXJ0eSk7O2ZhY2lsZTtcclxuUUNNOzg7Vm91cyBub3Vz4oCmIG1lcmNpLjtkw650ZXM7ZGl0ZXM7OztkaXRlcztcImRpdGVzIChjb21tZSBcIlwiZmFpdGVzXCJcIiwgc2FucyBhY2NlbnQpXCI7O2ZhY2lsZTtcclxuUUNNOzk7UGF1bCB0ZeKApiBsZSBkb3NzaWVyIHBhciBlLW1haWwuO3JlbnZvaXM7cmVudm9pZXM7cmVudm9pZTtyZW52b2l0O3JlbnZvaWU7cmVudm95ZXIsIC1lciwgZSwgZXMsIGU7O2ZhY2lsZTtcclxuUUNNOzEwO0pl4oCmIGxlIGRlcm5pZXIgcGFyYWdyYXBoZS47cmVsaWU7cmVsaXM7cmVsaXQ7cmVsaTtyZWxpcztyZWxpcmUsIGphdW5lLCBzLCBzLCB0Ozttb3llbjsiLCJjZmciOnsiZXhjZWxsZW50Ijp7Im1pbiI6ODAsInRleHQiOiJCcmF2bywgZXhjZWxsZW50IHNjb3JlICEiLCJsaW5rVGV4dCI6IlJlZ2FyZGUgbGUgY2VyZiIsImxpbmtIcmVmIjoiaHR0cHM6Ly93d3cuaGlnaGxhbmRzYWZhcmlzLm5ldC9ibG9nL2ltYWdlcy9kZWVyLWhlYWRlci5qcGciLCJpbWciOiJodHRwczovL3d3dy5oaWdobGFuZHNhZmFyaXMubmV0L2Jsb2cvaW1hZ2VzL2RlZXItaGVhZGVyLmpwZyJ9LCJnb29kIjp7Im1pbiI6NTAsIm1heCI6NzksInRleHQiOiJCZWF1IHLDqXN1bHRhdCwgZW5jb3JlIHVuIGVmZm9ydCBwb3VyIGF0dGVpbmRyZSBs4oCZZXhjZWxsZW5jZSAhIiwibGlua1RleHQiOiIiLCJsaW5rSHJlZiI6IiIsImltZyI6IiJ9LCJyZXZpZXciOnsibWF4Ijo0OSwidGV4dCI6IlBhcyBncmF2ZSwgw6dhIHNlIHRyYXZhaWxsZS4gUmV2b2lzIGxlIGNvdXJzIGV0IHJldGVudGUgISIsImxpbmtUZXh0IjoiIiwibGlua0hyZWYiOiIiLCJpbWciOiIifX0sInYiOjF9';if(!location.hash||!location.hash.includes('#q=')){location.hash='#q='+e;}})();</script>
+</body>
+</html>

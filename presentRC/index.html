@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Test csv réponse courte2</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="robots" content="noindex, nofollow">
+</head>
+<body>
+  <main id="app" class="app">
+
+    <!-- Écran import / accueil -->
+    <section id="screen-import" class="screen" aria-labelledby="import-title">
+      <h2 id="import-title">Charger votre quiz (CSV)</h2>
+
+      <!-- Bannière (masquée en mode lecteur) -->
+      <div id="readerBanner" class="reader-banner" hidden="">
+        Mode lecteur — ce quiz a été chargé depuis un lien partagé.
+      </div>
+
+      <div class="uploader">
+        <label for="csvFile">Fichier CSV</label>
+        <input id="csvFile" type="file" accept=".csv">
+        <p class="hint">Format : UTF‑8, virgules. A=type (QCM/RC), B=n°, C=question, D‑G=options, H=bonne réponse, I=explication.</p>
+      </div>
+
+      <!-- Config message final -->
+      <div class="final-message-card">
+        <h3>Message final (selon le score)</h3>
+        <p class="hint">Variables : <code>{score}</code>, <code>{percent}</code>.</p>
+
+        <!-- Palier 1 -->
+        <div class="final-row">
+          <label class="final-label">Palier 1 — Excellent (≥ %)</label>
+          <input id="cfgExcellentMin" type="number" min="0" max="100" value="80" class="final-num">
+          <textarea id="cfgExcellentText" rows="2">Bravo, excellent score !</textarea>
+          <div class="final-inline">
+            <input id="cfgExcellentLinkText" type="text" placeholder="Texte du lien (facultatif)">
+            <input id="cfgExcellentLinkHref" type="url" placeholder="https://lien.example (facultatif)">
+          </div>
+          <input id="cfgExcellentImg" type="url" placeholder="URL image/GIF (facultatif)">
+          <div class="img-preview" id="cfgExcellentImgPreviewWrap">
+            <img id="cfgExcellentImgPreview" alt="Prévisualisation (excellent)" src="https://www.highlandsafaris.net/blog/images/deer-header.jpg">
+            <small class="img-preview-hint">Prévisualisation</small>
+          </div>
+        </div>
+
+        <!-- Palier 2 -->
+        <div class="final-row">
+          <label class="final-label">Palier 2 — Bien (de % à %)</label>
+          <input id="cfgGoodMin" type="number" min="0" max="100" value="50" class="final-num">
+          <input id="cfgGoodMax" type="number" min="0" max="100" value="79" class="final-num">
+          <textarea id="cfgGoodText" rows="2">Beau résultat, encore un effort pour atteindre l’excellence !</textarea>
+          <div class="final-inline">
+            <input id="cfgGoodLinkText" type="text" placeholder="Texte du lien (facultatif)">
+            <input id="cfgGoodLinkHref" type="url" placeholder="https://lien.example (facultatif)">
+          </div>
+          <input id="cfgGoodImg" type="url" placeholder="URL image/GIF (facultatif)">
+          <div class="img-preview" id="cfgGoodImgPreviewWrap" hidden="">
+            <img id="cfgGoodImgPreview" alt="Prévisualisation (bien)" src="">
+            <small class="img-preview-hint">Prévisualisation</small>
+          </div>
+        </div>
+
+        <!-- Palier 3 -->
+        <div class="final-row">
+          <label class="final-label">Palier 3 — À revoir (&lt; %)</label>
+          <input id="cfgReviewMax" type="number" min="0" max="100" value="49" class="final-num">
+          <textarea id="cfgReviewText" rows="2">Pas grave, ça se travaille. Revois le cours et retente !</textarea>
+          <div class="final-inline">
+            <input id="cfgReviewLinkText" type="text" placeholder="Texte du lien (facultatif)">
+            <input id="cfgReviewLinkHref" type="url" placeholder="https://lien.example (facultatif)">
+          </div>
+          <input id="cfgReviewImg" type="url" placeholder="URL image/GIF (facultatif)">
+          <div class="img-preview" id="cfgReviewImgPreviewWrap" hidden="">
+            <img id="cfgReviewImgPreview" alt="Prévisualisation (à revoir)" src="">
+            <small class="img-preview-hint">Prévisualisation</small>
+          </div>
+        </div>
+
+        <div class="final-actions">
+          <button id="cfgSave" class="btn">Enregistrer</button>
+          <button id="cfgReset" class="btn ghost">Réinitialiser</button>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="import-actions">
+        <button id="btnStart" class="btn primary">Tester le quiz</button>
+        <button id="btnShare" class="btn">Partager le quiz</button>
+      </div>
+      <div id="importSummary" class="import-summary" aria-live="polite">10 question(s) détectée(s).</div>
+    </section>
+
+    <!-- Écran question -->
+    <section id="screen-question" class="screen" hidden="" aria-labelledby="question-title">
+      <header class="question-header">
+        <div id="progress" class="progress"></div>
+        <h2 id="question-title">Question</h2>
+      </header>
+      <div id="answers" class="answers"></div>
+
+      <!-- Valider d'abord dans le DOM → TAB vient ici en premier -->
+      <footer class="nav">
+        <button id="btnValidate" class="btn success nav-validate" type="button">Valider</button>
+        <button id="btnPrev" class="btn nav-prev" type="button">Précédent</button>
+      </footer>
+    </section>
+
+    <!-- Écran résultats -->
+    <section id="screen-results" class="screen" hidden="" aria-labelledby="results-title">
+      <h2 id="results-title">Résultats</h2>
+      <div class="results-top">
+        <div class="score-wrap">
+          <div id="finalScore" class="score"></div>
+        </div>
+        <aside id="finalMessageCard" class="final-card" aria-live="polite"></aside>
+      </div>
+      <div id="resultsList" class="results-list"></div>
+      <div class="results-actions">
+        <button id="btnRestart" class="btn">Recommencer</button>
+      </div>
+    </section>
+
+    <!-- Modal partage -->
+    <div id="shareModal" class="modal">
+      <div class="modal-card">
+        <header class="modal-head">
+          <h3>Partager le quiz</h3>
+          <button id="shareClose" class="btn ghost" type="button" aria-label="Fermer">✕</button>
+        </header>
+        <div class="modal-body">
+          <p class="hint">Ce lien contient le quiz + votre message final. Ouvrable sur ordinateur ou téléphone.</p>
+
+          <label class="final-label">Lien direct</label>
+          <div class="copy-row">
+            <input id="shareLink" type="url" readonly="">
+            <button id="copyLink" class="btn">Copier</button>
+          </div>
+
+          <label class="final-label">Intégration iFrame</label>
+          <div class="copy-row">
+            <textarea id="shareIframe" rows="3" readonly=""></textarea>
+            <button id="copyIframe" class="btn">Copier</button>
+          <button id="exportHtmlBtn" class="btn">Exporter .html (autonome)</button></div>
+
+          <p class="hint small">Si le lien est long, utilisez l’export “page autonome”.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="script.js"></script>
+
+  <!-- Payload embarqué : lu par script.js même sans hash -->
+  <script id="__QUIZ_PAYLOAD__" type="application/json">{"t":"Test csv réponse courte2","csv":"Type de question;Type de question;Texte de la question;Proposition 1;Proposition 2;Proposition 3 (facultatif);Proposition 4 (facultatif);Bonne réponse (texte EXACT hors majuscules);Explication ou rappel de la règle (facultatif)\r\nréponse courte;1;Elle… son camp.;;;;;choisit;\"\"\"choisir\"\", ni l'un ni l'autre, catégorie jaune\"\r\nréponse courte;2;Les témoins… le registre.;;;;;signent;\"sujet \"\"les témoins\"\" : ent\"\r\nréponse courte;3;Je… bien le problème.;;;;;comprends;\"verbe \"\"comprendre\"\", catégorie verte : ds, ds, d\"\r\nréponse courte;4;Ce produit… beaucoup.;;;;;pollue;\"verbe \"\"polluer\"\", e, es, e\"\r\nréponse courte;5;Je te… ses coordonées.;;;;;donne;\"sujet \"\"je\"\" \"\r\nréponse courte;6;Lola me… les documents nécessaires.;;;;;fournit;fournir, jaune, s, s, t\r\nréponse courte;7;\"Une mention \"\"très bien\"\"… un bel avenir.\";;;;;garantit;garantir, jaune, s, s, t (attention à ne pas confondre avec la garantie de Darty)\r\nréponse courte;8;Vous nous… merci.;;;;;dites;\"dites (comme \"\"faites\"\", sans accent)\"\r\nréponse courte;9;Paul te… le dossier par e-mail.;;;;;renvoie;renvoyer, -er, e, es, e\r\nréponse courte;10;Je… le dernier paragraphe.;;;;;relis;relire, jaune, s, s, t","cfg":{"excellent":{"min":80,"text":"Bravo, excellent score !","linkText":"Regarde le cerf","linkHref":"https://www.highlandsafaris.net/blog/images/deer-header.jpg","img":"https://www.highlandsafaris.net/blog/images/deer-header.jpg"},"good":{"min":50,"max":79,"text":"Beau résultat, encore un effort pour atteindre l’excellence !","linkText":"","linkHref":"","img":""},"review":{"max":49,"text":"Pas grave, ça se travaille. Revois le cours et retente !","linkText":"","linkHref":"","img":""}},"v":1}</script>
+
+  <!-- Optionnel : garder un hash pour rétro-compatibilité -->
+  <script>(function(){var e='eyJ0IjoiVGVzdCBjc3YgcmXMgXBvbnNlIGNvdXJ0ZTIiLCJjc3YiOiJUeXBlIGRlIHF1ZXN0aW9uO1R5cGUgZGUgcXVlc3Rpb247VGV4dGUgZGUgbGEgcXVlc3Rpb247UHJvcG9zaXRpb24gMTtQcm9wb3NpdGlvbiAyO1Byb3Bvc2l0aW9uIDMgKGZhY3VsdGF0aWYpO1Byb3Bvc2l0aW9uIDQgKGZhY3VsdGF0aWYpO0Jvbm5lIHLDqXBvbnNlICh0ZXh0ZSBFWEFDVCBob3JzIG1hanVzY3VsZXMpO0V4cGxpY2F0aW9uIG91IHJhcHBlbCBkZSBsYSByw6hnbGUgKGZhY3VsdGF0aWYpXHJcbnLDqXBvbnNlIGNvdXJ0ZTsxO0VsbGXigKYgc29uIGNhbXAuOzs7OztjaG9pc2l0O1wiXCJcImNob2lzaXJcIlwiLCBuaSBsJ3VuIG5pIGwnYXV0cmUsIGNhdMOpZ29yaWUgamF1bmVcIlxyXG5yw6lwb25zZSBjb3VydGU7MjtMZXMgdMOpbW9pbnPigKYgbGUgcmVnaXN0cmUuOzs7OztzaWduZW50O1wic3VqZXQgXCJcImxlcyB0w6ltb2luc1wiXCIgOiBlbnRcIlxyXG5yw6lwb25zZSBjb3VydGU7MztKZeKApiBiaWVuIGxlIHByb2Jsw6htZS47Ozs7O2NvbXByZW5kcztcInZlcmJlIFwiXCJjb21wcmVuZHJlXCJcIiwgY2F0w6lnb3JpZSB2ZXJ0ZSA6IGRzLCBkcywgZFwiXHJcbnLDqXBvbnNlIGNvdXJ0ZTs0O0NlIHByb2R1aXTigKYgYmVhdWNvdXAuOzs7Oztwb2xsdWU7XCJ2ZXJiZSBcIlwicG9sbHVlclwiXCIsIGUsIGVzLCBlXCJcclxucsOpcG9uc2UgY291cnRlOzU7SmUgdGXigKYgc2VzIGNvb3Jkb27DqWVzLjs7Ozs7ZG9ubmU7XCJzdWpldCBcIlwiamVcIlwiIFwiXHJcbnLDqXBvbnNlIGNvdXJ0ZTs2O0xvbGEgbWXigKYgbGVzIGRvY3VtZW50cyBuw6ljZXNzYWlyZXMuOzs7Oztmb3Vybml0O2ZvdXJuaXIsIGphdW5lLCBzLCBzLCB0XHJcbnLDqXBvbnNlIGNvdXJ0ZTs3O1wiVW5lIG1lbnRpb24gXCJcInRyw6hzIGJpZW5cIlwi4oCmIHVuIGJlbCBhdmVuaXIuXCI7Ozs7O2dhcmFudGl0O2dhcmFudGlyLCBqYXVuZSwgcywgcywgdCAoYXR0ZW50aW9uIMOgIG5lIHBhcyBjb25mb25kcmUgYXZlYyBsYSBnYXJhbnRpZSBkZSBEYXJ0eSlcclxucsOpcG9uc2UgY291cnRlOzg7Vm91cyBub3Vz4oCmIG1lcmNpLjs7Ozs7ZGl0ZXM7XCJkaXRlcyAoY29tbWUgXCJcImZhaXRlc1wiXCIsIHNhbnMgYWNjZW50KVwiXHJcbnLDqXBvbnNlIGNvdXJ0ZTs5O1BhdWwgdGXigKYgbGUgZG9zc2llciBwYXIgZS1tYWlsLjs7Ozs7cmVudm9pZTtyZW52b3llciwgLWVyLCBlLCBlcywgZVxyXG5yw6lwb25zZSBjb3VydGU7MTA7SmXigKYgbGUgZGVybmllciBwYXJhZ3JhcGhlLjs7Ozs7cmVsaXM7cmVsaXJlLCBqYXVuZSwgcywgcywgdCIsImNmZyI6eyJleGNlbGxlbnQiOnsibWluIjo4MCwidGV4dCI6IkJyYXZvLCBleGNlbGxlbnQgc2NvcmUgISIsImxpbmtUZXh0IjoiUmVnYXJkZSBsZSBjZXJmIiwibGlua0hyZWYiOiJodHRwczovL3d3dy5oaWdobGFuZHNhZmFyaXMubmV0L2Jsb2cvaW1hZ2VzL2RlZXItaGVhZGVyLmpwZyIsImltZyI6Imh0dHBzOi8vd3d3LmhpZ2hsYW5kc2FmYXJpcy5uZXQvYmxvZy9pbWFnZXMvZGVlci1oZWFkZXIuanBnIn0sImdvb2QiOnsibWluIjo1MCwibWF4Ijo3OSwidGV4dCI6IkJlYXUgcsOpc3VsdGF0LCBlbmNvcmUgdW4gZWZmb3J0IHBvdXIgYXR0ZWluZHJlIGzigJlleGNlbGxlbmNlICEiLCJsaW5rVGV4dCI6IiIsImxpbmtIcmVmIjoiIiwiaW1nIjoiIn0sInJldmlldyI6eyJtYXgiOjQ5LCJ0ZXh0IjoiUGFzIGdyYXZlLCDDp2Egc2UgdHJhdmFpbGxlLiBSZXZvaXMgbGUgY291cnMgZXQgcmV0ZW50ZSAhIiwibGlua1RleHQiOiIiLCJsaW5rSHJlZiI6IiIsImltZyI6IiJ9fSwidiI6MX0';if(!location.hash||!location.hash.includes('#q=')){location.hash='#q='+e;}})();</script>
+</body>
+</html>
